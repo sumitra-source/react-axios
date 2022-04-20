@@ -1,6 +1,6 @@
 import React,{useState} from 'react';
 import './App.css';
-import Memo from './Memo';
+import PostsPage from './PostsPage';
 
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
   return (
     <div className='App'>
 
-   <Memo/>
+   <PostsPage/>
     </div>
   );
 }
