@@ -5,9 +5,13 @@ const Post = props => {
     const[addedPost,setAddedPost]=useState();
     useEffect(()=>{
         console.log('useEffect')
-        fetch('https://jsonplaceholder.typicode.com/users/1/posts').then(res=>res.json())
-        .then(data=>setPosts(data));
-    })
+        const timeout=setTimeout(()=>{
+        fetch('https://jsonplaceholder.typicode.com/users/${props.user}/posts').then(res=>res.json())
+        .then(data=>setPosts(data));console.log('data fetched')},4000);
+        return()=>{
+            clearTimeout(timeout);
+        }
+    },[props.user])
     console.log('render');
   return (
       <section>
