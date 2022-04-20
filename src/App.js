@@ -1,26 +1,39 @@
-import logo from './logo.svg';
+import React,{useState} from 'react';
 import './App.css';
-import{useState}from 'react';
-import axios from 'axios'
-
 function App() {
-  const[quote,setQuote]=useState('')
-  const getQuote=() =>{
-    axios.get('https://api.quotable.io/random')
-    .then(res=>{
-      console.log(res.data.content)
-      setQuote(res.data.content)
-    }).catch(err=>{
-      console.log(err)
-    })
-    
+  const [formInputs,setFormInputs]=useState({
+    username:'',
+    password:''
+  })
+  const inputChangedHandler = e=>{
+    const updatedInputs={
+      ...formInputs,
+      //[key]:value
+      [e.target.id]:e.target.value
+    }
+    setFormInputs(updatedInputs);
+  }
+  const submitHandler = e=>{
+    e.preventDefault();
+  alert(`${formInputs.username} and ${formInputs.password}`)
+
   }
   return (
-    <div className="App">
-     <button onClick={getQuote}>Get Quote</button>
-     {quote&&<p>{quote}</p>}
+    <div className='App'>
+      <form autoComplete='off'onSubmit={submitHandler}>
+        <h1>TechCheck</h1>
+        <label htmlFor='username'>Username</label>
+        <input type='text'id='username' onChange={inputChangedHandler}/>
+           <label htmlFor='password'>Password</label>
+        <input type='password'id='password' onChange={inputChangedHandler}/>
+        <div className='Buttons'>
+          <button type='button'>Cancel</button>
+                    <button type='submit'>Submit</button>
+        </div>
+       
+      </form>
     </div>
   );
 }
 
-export default App;
+export default App
