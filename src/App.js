@@ -1,58 +1,49 @@
-import React ,{useState,useRef,useCallback}from 'react';
-import useBookSearch from './useBookSearch';
-
+import React ,{useState ,useRef,useEffect}from 'react';
+import TodoList from './TodoList';
+import { v4 as uuidv4 } from 'uuid';
+uuidv4();
+const LOCAL_STORAGE_KEY="todoApp.todos"
  function App() {
-  const[query,setQuery]=useState('')
-    const[pageNumber,setPageNumber]=useState(1)
+      const[todos,setTodos]=useState([])
+ const todoNameRef=useRef()
+   useEffect(()=>{
+const storedTodos=JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))
+   if(storedTodos)setTodos(storedTodos)
+   },[])
 
-    const{
-      books,
-    hasMore,
-    loading,
-    error
-    } =useBookSearch(query,pageNumber)
-    const observer=useRef()
-    const lastBookElementRef=useCallback(node=>{
-      if(loading)return
-if(observer.current)observer.current.disconnect()
-    observer.current=new IntersectionObserver(entries=>{
-   if (entries[0].isIntersecting && hasMore){
-  
-      setPageNumber(prevPageNumber=>prevPageNumber+1)
-         
+   useEffect(()=>{
+localStorage.setItem(LOCAL_STORAGE_KEY,JSON.stringify(todos))
+   },[todos])
+
+   function toggleTodo(id){
+     const newTodos=[...todos]
+     const todo=newTodos.find(todo=>todo.id===id)
+     todo.complete=!todo.complete
+     setTodos(newTodos)
    }
-        })
-  if(node)observer.current.observe(node)
- },[loading,hasMore])
-
-
-
-
-    function handleSearch(e){
-      setQuery(e.target.value)
-      setPageNumber(1)
-    }
-    
-
+   function handleAddTodo(e){
+    const name=todoNameRef.current.value
+    if(name=='')return
+    setTodos(prevTodos=>{
+      return[...prevTodos,{id:uuidv4,name:name,complete:false}]
+    })
+    todoNameRef.current.value=null;
+     
+   }
+   function handleClearTodos(){
+     const newTodos=todos.filter(todos!=todos.complete)
+     setTodos(newTodos)
+   }
   return (
-    <>
-   <input type='text'value={query}onChange={handleSearch}></input>
-{books.map((book,index)=>{
+<>
+<input ref={todoNameRef} type='text'/>
+<button onClick={handleAddTodo}>Add Todo</button>
+<button onclick={handleClearTodos}>Clear Completed Todos</button>
+<div>{todos.filter(todo=>!todo.complete).length}left todo</div>
+  
 
-if(books.length===index+1){ 
-  return  <div ref={lastBookElementRef}key={book}>{book}</div>
-}else{
-  return  <div key={book}>{book}</div>}
-
-})}
-
-
-   <div>{loading&&'loading...'}</div>
-   <div>{error&&'error...'}</div>
-
-
-
-   </>
+  <TodoList todos={todos} toggleTodo={toggleTodo}/>
+  </>
   )
 }
 export default App;
