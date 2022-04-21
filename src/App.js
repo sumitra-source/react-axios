@@ -1,33 +1,58 @@
-import{useState}from 'react';
-import './App.css';
-function App(){
-  const namesFromDatabase=[
-    {id:1,username:'Sumitra Shrestha'},
-    {id:2,username:'Nikita Rijal'},
-    {id:3,username:'  Nabina Kusi'}
-  ]
-  const[names,setNames]=useState(namesFromDatabase)
-  const filterNames=e=>{
-    const search=e.target.value.toLowerCase()
-    const filteredNames=namesFromDatabase.filter(names=>names.username.toLowerCase().includes(search))
-    setNames(filteredNames)
-  }
-  return(
-    <div className="App">
-      <header className="App-header">
-        <h2>Username</h2>
-        <hr/>
-        <input type='text'onChange={(e)=>filterNames(e)}/>
-        <button>Search</button>
-        <ul>
-          {names.map(name=>{
-            return<li key={name.id}>
-              {name.username}</li>
-          
-          })}
-        </ul>
-      </header>
-    </div>
+import React ,{useState,useRef,useCallback}from 'react';
+import useBookSearch from './useBookSearch';
+
+ function App() {
+  const[query,setQuery]=useState('')
+    const[pageNumber,setPageNumber]=useState(1)
+
+    const{
+      books,
+    hasMore,
+    loading,
+    error
+    } =useBookSearch(query,pageNumber)
+    const observer=useRef()
+    const lastBookElementRef=useCallback(node=>{
+      if(loading)return
+if(observer.current)observer.current.disconnect()
+    observer.current=new IntersectionObserver(entries=>{
+   if (entries[0].isIntersecting && hasMore){
+  
+      setPageNumber(prevPageNumber=>prevPageNumber+1)
+         
+   }
+        })
+  if(node)observer.current.observe(node)
+ },[loading,hasMore])
+
+
+
+
+    function handleSearch(e){
+      setQuery(e.target.value)
+      setPageNumber(1)
+    }
+    
+
+  return (
+    <>
+   <input type='text'value={query}onChange={handleSearch}></input>
+{books.map((book,index)=>{
+
+if(books.length===index+1){ 
+  return  <div ref={lastBookElementRef}key={book}>{book}</div>
+}else{
+  return  <div key={book}>{book}</div>}
+
+})}
+
+
+   <div>{loading&&'loading...'}</div>
+   <div>{error&&'error...'}</div>
+
+
+
+   </>
   )
 }
-export default App
+export default App;
