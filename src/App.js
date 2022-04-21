@@ -1,60 +1,18 @@
-import React,{useReducer} from 'react';
-import * as actionTypes from './actions';
+import useFetch from './useFetch';
 import './App.css';
 
-const initialState={
-  loading:false,
-  error:null,
-  quote:''
-}
-const reducer=(state,action)=>{
-  switch(action.type){
-    case actionTypes.ON_FETCH_START:
-      return{
-        ...state,
-        loading:true ,
-        quote:''
-
-      }
-      case actionTypes.ON_FETCH_FAIL:
-        return{
-          ...state,
-          loading:false,
-          error:'I swear this usually never happens',
-          quote:''
-        }
-        case actionTypes.ON_FETCH_SUCCESS:
-          return{
-            ...state,
-            loading:false,
-            error:null,
-            quote:action.quote
-          }
-          default:return state
-        }
-  }
-
 function App() {
-  const [state,dispatch]=useReducer(reducer,initialState);
-  const fetchQuote=()=>{
-    dispatch({type:actionTypes.ON_FETCH_START});
-    setTimeout(()=>{
-    fetch('https://api.quotable.io/random')
-    .then(response=>response.json())
-    .then(data=>dispatch({type:actionTypes.ON_FETCH_SUCCESS,quote:data.content}))
-    .catch(error=>dispatch({type:actionTypes.ON_FETCH_FAIL}));},1000);
-  }
+  const{data:quote,loading,error}=useFetch('https://api.quotable.io/random');
+
+
   return (
     <div className='App'>
-    <header classNamed="App-header">
-      <button onClick={fetchQuote}>Fetch Quote</button>
-      <section>
-      {state.loading?<p>loading...</p>:null}
-        {state.error?<p>{state.error}</p>:null}
-        {state.quote?<p>"{state.quote}"</p>:null}
-      </section>  
-    </header>
+   {loading&&<p>{loading}</p>}
+   {quote&&<p>"{quote}"</p>}
+   {error&&<p>{error}</p>}
+    
     </div>
+  
   );
 }
 
