@@ -1,29 +1,61 @@
-import React,{useState}from 'react'
+import React,{useReducer} from 'react';
+import * as actionTypes from './actions';
 import './App.css';
+
+const initialState={
+  loading:false,
+  error:null,
+  quote:''
+}
+const reducer=(state,action)=>{
+  switch(action.type){
+    case actionTypes.ON_FETCH_START:
+      return{
+        ...state,
+        loading:true ,
+        quote:''
+
+      }
+      case actionTypes.ON_FETCH_FAIL:
+        return{
+          ...state,
+          loading:false,
+          error:'I swear this usually never happens',
+          quote:''
+        }
+        case actionTypes.ON_FETCH_SUCCESS:
+          return{
+            ...state,
+            loading:false,
+            error:null,
+            quote:action.quote
+          }
+          default:return state
+        }
+  }
+
 function App() {
-  const [count,setCount]=useState(0);
-  const[showCount,setShowCount]=useState(true);
-  const[guitar,setGuitar]=useState({
-    brand:'Fender',
-    model:'Stratocaster'
-  })
-  fetch(`api.com/${song}`).then(response=>setSong({...song,artist:response.artist,song:response.song}))
+  const [state,dispatch]=useReducer(reducer,initialState);
+  const fetchQuote=()=>{
+    dispatch({type:actionTypes.ON_FETCH_START});
+    setTimeout(()=>{
+    fetch('https://api.quotable.io/random')
+    .then(response=>response.json())
+    .then(data=>dispatch({type:actionTypes.ON_FETCH_SUCCESS,quote:data.content}))
+    .catch(error=>dispatch({type:actionTypes.ON_FETCH_FAIL}));},1000);
+  }
   return (
-    <div className="App">
-    <header className="App-header">
-    {/*
-    <button onClick={()=>setShowCount(!showCount)}>toggle count</button>
-
-    <button onClick={()=>setCount(count+1)}>Count it</button>
-
-    {showCount?<p>{count}</p>:null}*/}
-    <button onClick={()=>setGuitar({...guitar,model:'Telecaster'})}>Change model</button>
-    
-     <p>{guitar.brand}</p>
-     <p>{guitar.model}</p>
-   
-
-    </header></div>
+    <div className='App'>
+    <header classNamed="App-header">
+      <button onClick={fetchQuote}>Fetch Quote</button>
+      <section>
+      {state.loading?<p>loading...</p>:null}
+        {state.error?<p>{state.error}</p>:null}
+        {state.quote?<p>"{state.quote}"</p>:null}
+      </section>  
+    </header>
+    </div>
   );
 }
-export default App;
+
+export default App
