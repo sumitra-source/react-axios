@@ -1,4 +1,0 @@
-export const ON_FETCH_START='ON_FETCH_START';
-export const ON_FETCH_FAIL='ON_FETCH_FAIL';
-
-export const ON_FETCH_SUCCESS='ON_FETCH_SUCCESS';

@@ -1,78 +1,78 @@
-import React,{useEffect,useState} from 'react';
-import './App.css'
-import CurrencyRow from './CurrencyRow';
+import React,{useState,useEffect,useRef} from 'react';
+import FlashcardList from './FlashcardList';
+import './app.css';
+import axios from 'axios'
 
-const BASE_URL="https://api.exchangeratesapi.io/v1/"
+ function App() {
+   const[flashCards,setFlashCards]=useState([])
+   const[categories,setCategories]=useState([])
+   const categoryEl=useRef()
+   const amountEl=useRef()
 
+   useEffect(()=>{
+     axios.get('https://opentdb.com/api_category.php')
+     .then(res=>{
+setCategories(res.data.trivia_categories)
+     })
 
-function App(){
-  const[currencyOptions,setCurrencyOptions]=useState([])
-  const[fromCurrency,setFromCurrency]=useState()
-  const[toCurrency,setToCurrency]=useState()
-  const [exchangeRate,setExchangeRate]=useState()
-  const [amount,setAmount]=useState(1)
-  const [amountInFromCurrency,setAmountInFromCurrency]=useState(true)
-let toAmount,fromAmount
-if(amountInFromCurrency){
-  fromAmount=amount
-  toAmount=amount*exchangeRate
-}else{
-  amount=toAmount
-  fromAmount=amount/exchangeRate
+   },[])
+
+   useEffect(()=>{
+
+    },[])
+
+function decodeString(str){
+  const textarea=document.createElement('textarea')
+  textarea.innerHTML=str
+  return textarea.value
 }
+function handleSubmit(e){
+  e.preventDefault()
+  axios.get('https://opentdb.com/api.php',{
+    params:{
+      amount:amountEl.current.value,
+      category:categoryEl.current.value
 
-  console.log(currencyOptions)
-  useEffect(()=>{
-fetch(BASE_URL)
-.then(res=>res.json())
-.then(data=>{
-  const firstCurrency=Object.keys(data.rates)[0]
-  setCurrencyOptions([data.base, ...Object.keys(data.rates)])
-  setFromCurrency(data.base)
-  setToCurrency(firstCurrency)
-  setExchangeRate(data.rates[firstCurrency])
-})
-  },[])
-  useEffect
-  (()=>{
-    if(fromCurrency != null && toCurrency != null){
-    fetch(`${BASE_URL}?base=${fromCurrency}&symbols=${toCurrency} `)
-    .then(res=>res.json())
-    .then(data=>setExchangeRate(data.rates[toCurrency]))
     }
+  })
+.then(res=>{
+  setFlashCards(res.data.results.map((questionItem,index)=>{
+    const answer=decodeString(questionItem.correct_answer)
+   const options=[...questionItem.incorrect_answers
+    .map(a=>decodeString(a)),answer]
+    return{
+      id:`${index}+${Date.now()}`,    question:decodeString(questionItem.question),
+      answer:answer,
 
+options:options.sort(()=>Math.random()-.5)
+    }
+  }))
+})
+ 
+  
+}
+  return (<>
+  <form className='header'onSubmit={handleSubmit}>
+  <div className='form-group'>
+    <label htmlFor='category'>Category</label>
+    <select id='category' ref={categoryEl}>
+    {categories.map(category=>{
+      return <option value={category.id}key={category.id}>{category.name}</option>
+    })}
 
-  },[fromCurrency,toCurrency])
-  function handleFromAmountChange(e){
-    setAmount(e.target.value)
-    setAmountInFromCurrency(true)
-
-  }
-  function handleToAmountChange(e){
-    setAmount(e.target.value)
-    setAmountInFromCurrency(false)
-
-  }
-  return(
-    <>
-<h1>Convert</h1>
-<CurrencyRow currencyOptions={currencyOptions}
-  selectedCurrency={fromCurrency}
-  onChangeCurrency={e=>setFromCurrency(e.target.value)}
-  onChangeAmount={handleFromAmountChange}
-
-  amount={fromAmount}
-
-/>
-<div className="equals">=</div>
-<CurrencyRow currencyOptions={currencyOptions}
-  selectedCurrency={toCurrency}
-  onChangeCurrency={e=>setToCurrency(e.target.value)}
-  onChangeAmount={handleToAmountChange}
-
-  amount={toAmount}
-/>
-</>
+    </select>
+  </div>
+  <div className='form-group'>
+   <label htmlFor='amount'>Number of Questions</label>
+   <input type='number'id='amount'min='1'step='1'defaultValue={10}ref={amountEl}/>
+</div>
+  <div className='form-group'>
+    <button className='btn'>Generate</button>
+  </div>
+  </form><div className='container'>
+<FlashcardList flashCards={flashCards}/>
+</div></>
   )
 }
-export default App;
+
+export default App
