@@ -1,49 +1,78 @@
-import React ,{useState ,useRef,useEffect}from 'react';
-import TodoList from './TodoList';
-import { v4 as uuidv4 } from 'uuid';
-uuidv4();
-const LOCAL_STORAGE_KEY="todoApp.todos"
- function App() {
-      const[todos,setTodos]=useState([])
- const todoNameRef=useRef()
-   useEffect(()=>{
-const storedTodos=JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))
-   if(storedTodos)setTodos(storedTodos)
-   },[])
+import React,{useEffect,useState} from 'react';
+import './App.css'
+import CurrencyRow from './CurrencyRow';
 
-   useEffect(()=>{
-localStorage.setItem(LOCAL_STORAGE_KEY,JSON.stringify(todos))
-   },[todos])
+const BASE_URL="https://api.exchangeratesapi.io/v1/"
 
-   function toggleTodo(id){
-     const newTodos=[...todos]
-     const todo=newTodos.find(todo=>todo.id===id)
-     todo.complete=!todo.complete
-     setTodos(newTodos)
-   }
-   function handleAddTodo(e){
-    const name=todoNameRef.current.value
-    if(name=='')return
-    setTodos(prevTodos=>{
-      return[...prevTodos,{id:uuidv4,name:name,complete:false}]
-    })
-    todoNameRef.current.value=null;
-     
-   }
-   function handleClearTodos(){
-     const newTodos=todos.filter(todos!=todos.complete)
-     setTodos(newTodos)
-   }
-  return (
-<>
-<input ref={todoNameRef} type='text'/>
-<button onClick={handleAddTodo}>Add Todo</button>
-<button onclick={handleClearTodos}>Clear Completed Todos</button>
-<div>{todos.filter(todo=>!todo.complete).length}left todo</div>
-  
 
-  <TodoList todos={todos} toggleTodo={toggleTodo}/>
-  </>
+function App(){
+  const[currencyOptions,setCurrencyOptions]=useState([])
+  const[fromCurrency,setFromCurrency]=useState()
+  const[toCurrency,setToCurrency]=useState()
+  const [exchangeRate,setExchangeRate]=useState()
+  const [amount,setAmount]=useState(1)
+  const [amountInFromCurrency,setAmountInFromCurrency]=useState(true)
+let toAmount,fromAmount
+if(amountInFromCurrency){
+  fromAmount=amount
+  toAmount=amount*exchangeRate
+}else{
+  amount=toAmount
+  fromAmount=amount/exchangeRate
+}
+
+  console.log(currencyOptions)
+  useEffect(()=>{
+fetch(BASE_URL)
+.then(res=>res.json())
+.then(data=>{
+  const firstCurrency=Object.keys(data.rates)[0]
+  setCurrencyOptions([data.base, ...Object.keys(data.rates)])
+  setFromCurrency(data.base)
+  setToCurrency(firstCurrency)
+  setExchangeRate(data.rates[firstCurrency])
+})
+  },[])
+  useEffect
+  (()=>{
+    if(fromCurrency != null && toCurrency != null){
+    fetch(`${BASE_URL}?base=${fromCurrency}&symbols=${toCurrency} `)
+    .then(res=>res.json())
+    .then(data=>setExchangeRate(data.rates[toCurrency]))
+    }
+
+
+  },[fromCurrency,toCurrency])
+  function handleFromAmountChange(e){
+    setAmount(e.target.value)
+    setAmountInFromCurrency(true)
+
+  }
+  function handleToAmountChange(e){
+    setAmount(e.target.value)
+    setAmountInFromCurrency(false)
+
+  }
+  return(
+    <>
+<h1>Convert</h1>
+<CurrencyRow currencyOptions={currencyOptions}
+  selectedCurrency={fromCurrency}
+  onChangeCurrency={e=>setFromCurrency(e.target.value)}
+  onChangeAmount={handleFromAmountChange}
+
+  amount={fromAmount}
+
+/>
+<div className="equals">=</div>
+<CurrencyRow currencyOptions={currencyOptions}
+  selectedCurrency={toCurrency}
+  onChangeCurrency={e=>setToCurrency(e.target.value)}
+  onChangeAmount={handleToAmountChange}
+
+  amount={toAmount}
+/>
+</>
   )
 }
 export default App;
