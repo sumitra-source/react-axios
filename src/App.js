@@ -1,47 +1,29 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useMemo,useEffect} from 'react'
 
-{/*function App() {
-  const[resourceType,setResourceType]=useState('posts')
-  const[items,setItems]=useState([])
-
-  console.log('render')
-
+export default function App() {
+  const [number,setNumber]=useState(0)
+  const[dark,setDark]=useState(false)
+  const doubleNumber=useMemo(()=>{
+    return slowFunction(number)
+  },[number])
+  const themeStyle=useMemo(()=>{return{
+    backgroundColor:dark?'black':'white',
+    color:dark?'white':'black'
+  }},[dark])
   useEffect(()=>{
-    fetch(`https://jsonplaceholder.typicode.com/${resourceType}`)
-    .then(response=>response.json())
-    .then(json=>setItems(json))
-
-  },[resourceType])
-
+    console.log('themestyle')
+  },[themeStyle])
   return (
-
-<><div>
-  <button onClick={()=>setResourceType('posts')}>Posts</button>
- <button onClick={()=>setResourceType('users')}>Users</button>
- <button onClick={()=>setResourceType('comments')}>Comments</button>
- </div>
- <h1>{resourceType}</h1>
- {items.map(item=>{
-   return<pre>{JSON.stringify(item)}</pre>
- })}
-</>
-
+    <>
+    <input type="number"value={number} onChange={e=>setNumber(parseInt(e.target.value))}/>
+    <button onClick={()=>setDark(prevDark=>!prevDark)}>Change Theme</button>
+    <div style={themeStyle}>{doubleNumber}</div>
+    </>
   )
-}*/}
-function App(){
-  const[windowWidth,setWindowWidth]=useState(window.innerWidth)
-  const handleResize=()=>{
-    setWindowWidth(Window.innerWidth)
-  }
-  
-  useEffect(()=>{
-    window.addEventListener('resize',handleResize)
-    return()=>{
-      window.removeEventListener('resize',handleResize)
-    }
-  },[])
-  return(
-    <div>{windowWidth}</div>
-  )}
+}
+function slowFunction(num){
 
-export default App
+  console.log('Calling Slow Function')
+  for(let i=0;i<=10000000;i++)
+  return num*2
+}
