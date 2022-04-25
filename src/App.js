@@ -1,12 +1,24 @@
-
-import React from 'react'
-import useLocalStorage from './useLocalStorage'
-import useUpdateLogger from './useUpdateLogger'
-
+import React,{useState} from 'react'
+import Modal from './Modal'
+const BUTTON_WRAPPER_STYLES={
+position:'relative',
+zIndex:1
+}
+const OTHER_CONTENT_STYLES={
+  position:'relative',
+  zIndex:2,
+  backgroundColor:'red',
+  padding:'10px'
+}
 export default function App() {
-  const[name,setName]=useLocalStorage('name','')
-  useUpdateLogger(name)
-  return (
-  <input type="text"value={name}onChange={e=>setName(e.target.value)}/>
+  const[isOpen,setIsOpen]=useState(false)
+  return (<>
+  <div style={BUTTON_WRAPPER_STYLES} onClick={()=>console.log('clicked')}>
+    <button onClick={()=>setIsOpen(true)}>Open Model</button>
+    <Modal open={isOpen} onClose={()=>setIsOpen(false)}>
+      Fancy Modal
+    </Modal>
+    </div><div style={OTHER_CONTENT_STYLES}>Other Content</div>
+    </>
   )
 }
